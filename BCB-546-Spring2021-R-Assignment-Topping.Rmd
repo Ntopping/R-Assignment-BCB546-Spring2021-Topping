@@ -22,8 +22,8 @@ To load the working repository into R Studio:
 Next, open both data files, `fang_et_al_genotypes` and `snp_position.txt`.
 Both of these files were pulled from my computer where I already had them saved
 ``` {r}
-fang_et_al_genotypes <- read.delim("~/Unix-Assignment-SP2021-Topping/Raw_Data/fang_et_al_genotypes.txt", header=FALSE)
-snp_position.txt <- read.delim("~/Unix-Assignment-SP2021-Topping/Raw_Data/snp_position.txt", header=FALSE)
+fang_et_al_genotypes <- read.table("https://raw.githubusercontent.com/EEOB-BioData/BCB546-Spring2021/master/assignments/UNIX_Assignment/fang_et_al_genotypes.txt", header = TRUE,)
+snp_position <- read.table("https://raw.githubusercontent.com/EEOB-BioData/BCB546-Spring2021/master/assignments/UNIX_Assignment/snp_position.txt", header = TRUE, sep = "\t")
 ```
 To quickly look at the data files, double click on them in the Environment. This will show the data in a .txt file that you can see.
 
@@ -71,32 +71,32 @@ dim(fang_et_al_genotypes)
 
 Note: The output for functions `head()` `tail()` `str()` `names()` and `sapply(dataframe, class)` are not included in this markdown file for this data table as these outputs are very long and clutter the console
 
-## snp_position.txt
+## snp_position
 
 ``` {r}
-nrow(snp_position.txt)
+nrow(snp_position)
 ```
 
 ``` {r}
-ncol(snp_position.txt)
+ncol(snp_position)
 ```
 
 ``` {r}
-dim(snp_position.txt)
+dim(snp_position)
 ```
 
 ``` {r}
-str(snp_position.txt)
+str(snp_position)
 ```
 
 ``` {r}
-names(snp_position.txt)
+names(snp_position)
 ```
 
 ``` {r}
-sapply(snp_position.txt, class)
+sapply(snp_position, class)
 ```
 
-For this data table, only `head()` and `tails()` were left out of the snp_position.txt analyses
+For this data table, only `head()` and `tails()` were left out of the snp_position analyses
 
 
