@@ -1,0 +1,102 @@
+---
+title: "R-Assignment-BCB546-Spring2021-Topping"
+author: "Nick Topping"
+date: "3/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Assignment
+
+To start, create a repository on GitHub.
+My repository is named R-Assignment-BCB546-Spring2021-Topping.
+To load the working repository into R Studio:
+
+1. Clone the repository to your clipboard
+2. Open R Studio and click File, New Project, Version Control, Git
+3. Paste the repository URL, fill in the directory name and click Create Project
+
+Next, open both data files, `fang_et_al_genotypes` and `snp_position.txt`.
+Both of these files were pulled from my computer where I already had them saved
+``` {r}
+fang_et_al_genotypes <- read.delim("~/Unix-Assignment-SP2021-Topping/Raw_Data/fang_et_al_genotypes.txt", header=FALSE)
+snp_position.txt <- read.delim("~/Unix-Assignment-SP2021-Topping/Raw_Data/snp_position.txt", header=FALSE)
+```
+To quickly look at the data files, double click on them in the Environment. This will show the data in a .txt file that you can see.
+
+Note: You can also use the function `view(fang_et_al_genotypes)` will also show the data, but it isn't working in my markdown file for some reason...
+
+Below are a few codes you can use to inspect the data
+
+`object.size()` shows the file size of the data frame
+
+`nrow()` shows the number of rows
+
+`ncol()` shows the number of columns
+
+`dim()` shows the dimensions of the data frame by row and column
+
+`head()` show first 6 rows
+
+`tail()` shows last 6 rows
+
+`str()` shows the structure of the data frame: the name, type and preview of data in each column
+
+`names()` shows the names attributes for the data frame, which are also the column names
+
+the function `colnames()` also will show the column names
+
+`sapply(dataframe, class)` shows the class of each column of data
+
+## fang_et_al_genotypes
+
+``` {r}
+object.size(fang_et_al_genotypes)
+```
+
+``` {r}
+nrow(fang_et_al_genotypes)
+```
+
+``` {r}
+ncol(fang_et_al_genotypes)
+```
+
+``` {r}
+dim(fang_et_al_genotypes)
+```
+
+Note: The output for functions `head()` `tail()` `str()` `names()` and `sapply(dataframe, class)` are not included in this markdown file for this data table as these outputs are very long and clutter the console
+
+## snp_position.txt
+
+``` {r}
+nrow(snp_position.txt)
+```
+
+``` {r}
+ncol(snp_position.txt)
+```
+
+``` {r}
+dim(snp_position.txt)
+```
+
+``` {r}
+str(snp_position.txt)
+```
+
+``` {r}
+names(snp_position.txt)
+```
+
+``` {r}
+sapply(snp_position.txt, class)
+```
+
+For this data table, only `head()` and `tails()` were left out of the snp_position.txt analyses
+
+
