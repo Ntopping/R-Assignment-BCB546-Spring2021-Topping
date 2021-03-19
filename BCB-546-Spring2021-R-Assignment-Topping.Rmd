@@ -19,12 +19,7 @@ To load the working repository into R Studio:
 2. Open R Studio and click File, New Project, Version Control, Git
 3. Paste the repository URL, fill in the directory name and click Create Project
 
-Then, load any R packages needed for this assignment. They are:
-
-``` {r}
-install.packages("tidyverse")
-library(Tidyverse)
-```
+Then, load any R packages needed for this assignment. Tidyverse is the only package needed. Use `install.packages("tidyverse")`
 
 Next, open both data files, `fang_et_al_genotypes` and `snp_position.txt`.
 Both of these files were pulled from my computer where I already had them saved
@@ -68,7 +63,7 @@ object.size(fang_et_al_genotypes)
 nrow(fang_et_al_genotypes)
 ```
 
-``` {r}
+``` {r eval = FALSE}
 ncol(fang_et_al_genotypes)
 ```
 
@@ -151,15 +146,35 @@ Teosinte_Chromosomes <- merge(SNP_Chrom_Pos,Teosinte_IDs_Transposed, by = "SNP_I
 Sort both new files by position with the `order()` function
 
 ``` {r}
-Maize_Chromosomes_Ascending <- Maize_Chromosomes[order(Maize_Chromosomes$Position), ]
-Teosinte_Chromosomes_Ascending <- Teosinte_Chromosomes[order(Teosinte_Chromosomes$Position), ]
-Maize_Chromosomes_Descending <- Maize_Chromosomes[order(Maize_Chromosomes$Position, decreasing = T), ]
-Teosinte_Chromosomes_Descending <- Teosinte_Chromosomes[order(Teosinte_Chromosomes$Position, decreasing = T), ]
+Maize_Chromosomes_Ascending <- Maize_Chromosomes[order(as.numeric(Maize_Chromosomes$Position)), ]
+Teosinte_Chromosomes_Ascending <- Teosinte_Chromosomes[order(as.numeric(Teosinte_Chromosomes$Position)), ]
+Maize_Chromosomes_Descending <- Maize_Chromosomes[order(as.numeric(Maize_Chromosomes$Position, decreasing = T)), ]
+Teosinte_Chromosomes_Descending <- Teosinte_Chromosomes[order(as.numeric(Teosinte_Chromosomes$Position, decreasing = T)), ]
 ```
 
 ``` {r}
-Maize_Ascending_Chromosome_1 <- Maize_Chromosomes_Ascending %>% filter(Chromosome == 1)
+Filter_By_Chromosome <- function(x, df){
+  df %>% filter(Chromosome == x)
+}
+Maize_Ascending_By_Chromosome <- 
+lapply(sort(unique(Maize_Chromosomes_Ascending$Chromosome)), Filter_By_Chromosome, Maize_Chromosomes_Ascending)
+invisible(lapply(Maize_Ascending_By_Chromosome, function(x) write.csv(x, file = paste0("Maize_Ascending_Chromosome_", x$Chromosome[1]))))
 ```
 
+``` {r}
+Maize_Descending_By_Chromosome <- 
+lapply(sort(unique(Maize_Chromosomes_Descending$Chromosome)), Filter_By_Chromosome, Maize_Chromosomes_Descending)
+invisible(lapply(Maize_Descending_By_Chromosome, function(x) write.csv(x, file = paste0("Maize_Descending_Chromosome_", x$Chromosome[1]))))
+```
 
+``` {r}
+Teosinte_Ascending_By_Chromosome <- 
+lapply(sort(unique(Teosinte_Chromosomes_Ascending$Chromosome)), Filter_By_Chromosome, Teosinte_Chromosomes_Ascending)
+invisible(lapply(Teosinte_Ascending_By_Chromosome,function(x) write.csv(x, file = paste0("Teosinte_Ascending_Chromosome_", x$Chromosome[1]))))
+```
 
+``` {r}
+Teosinte_Descending_By_Chromosome <- 
+lapply(sort(unique(Teosinte_Chromosomes_Descending$Chromosome)), Filter_By_Chromosome, Teosinte_Chromosomes_Descending)
+invisible(lapply(Teosinte_Descending_By_Chromosome,function(x) write.csv(x, file = paste0("Teosinte_Descending_Chromosome_", x$Chromosome[1]))))
+```
