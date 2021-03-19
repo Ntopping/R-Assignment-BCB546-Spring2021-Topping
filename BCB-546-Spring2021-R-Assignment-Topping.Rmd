@@ -19,7 +19,15 @@ To load the working repository into R Studio:
 2. Open R Studio and click File, New Project, Version Control, Git
 3. Paste the repository URL, fill in the directory name and click Create Project
 
-Then, load any R packages needed for this assignment. Tidyverse is the only package needed. Use `install.packages("tidyverse")`
+Then, install and load any R packages needed for this assignment. You will need `tidyverse`, `ggplot2`, and `stringr`. Use `install.packages("package")` and load it into your library
+
+``` {r}
+library(tidyverse)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(stringr)
+```
 
 Next, open both data files, `fang_et_al_genotypes` and `snp_position.txt`.
 Both of these files were pulled from my computer where I already had them saved
@@ -105,7 +113,7 @@ sapply(snp_position, class)
 
 For this data table, only `head()` and `tails()` were left out of the snp_position analyses
 
-##Creating New Data Filess
+##Data Processing
 
 Create two new data frames sorted by the ID's of both species from fang_et_al_genotypes with the following code:
 
@@ -146,11 +154,13 @@ Teosinte_Chromosomes <- merge(SNP_Chrom_Pos,Teosinte_IDs_Transposed, by = "SNP_I
 Sort both new files by position with the `order()` function
 
 ``` {r}
-Maize_Chromosomes_Ascending <- Maize_Chromosomes[order(as.numeric(Maize_Chromosomes$Position)), ]
-Teosinte_Chromosomes_Ascending <- Teosinte_Chromosomes[order(as.numeric(Teosinte_Chromosomes$Position)), ]
-Maize_Chromosomes_Descending <- Maize_Chromosomes[order(as.numeric(Maize_Chromosomes$Position, decreasing = T)), ]
-Teosinte_Chromosomes_Descending <- Teosinte_Chromosomes[order(as.numeric(Teosinte_Chromosomes$Position, decreasing = T)), ]
+Maize_Chromosomes_Ascending <- Maize_Chromosomes[order(suppressWarnings(as.numeric(Maize_Chromosomes$Position))), ]
+Teosinte_Chromosomes_Ascending <- Teosinte_Chromosomes[order(suppressWarnings(as.numeric(Teosinte_Chromosomes$Position))), ]
+Maize_Chromosomes_Descending <- Maize_Chromosomes[order(suppressWarnings(as.numeric(Maize_Chromosomes$Position, decreasing = T))), ]
+Teosinte_Chromosomes_Descending <- Teosinte_Chromosomes[order(suppressWarnings(as.numeric(Teosinte_Chromosomes$Position, decreasing = T))), ]
 ```
+
+###Create a function to create 10 files in one command chunk###
 
 ``` {r}
 Filter_By_Chromosome <- function(x, df){
@@ -177,4 +187,72 @@ invisible(lapply(Teosinte_Ascending_By_Chromosome,function(x) write.csv(x, file 
 Teosinte_Descending_By_Chromosome <- 
 lapply(sort(unique(Teosinte_Chromosomes_Descending$Chromosome)), Filter_By_Chromosome, Teosinte_Chromosomes_Descending)
 invisible(lapply(Teosinte_Descending_By_Chromosome,function(x) write.csv(x, file = paste0("Teosinte_Descending_Chromosome_", x$Chromosome[1]))))
+```
+#Plots#
+
+Transform the data so that both position and chromosome are numeric
+``` {r}
+Maize_Chromosomes_Numeric <- transform(Maize_Chromosomes, Chromosome =as.numeric(Chromosome), Position=as.numeric(Position))
+Teosinte_Chromosomes_Numeric <- transform(Teosinte_Chromosomes, Chromosome =as.numeric(Chromosome), Position=as.numeric(Position))
+```
+###Plot the number of SNP's on each chromosome from the `snp_position` dataset###
+This gives the total number of SNPs per chromosome for both Maize and Teosinte
+```{r}
+snp_position %>% 
+  select(SNP_ID, Chromosome, Position) %>%
+  drop_na() %>% 
+  ggplot()+
+  geom_bar(aes(x=Chromosome))
+```
+``` {r}
+Zygosity_Maize_Chromosomes_Numeric <- Maize_Chromosomes_Numeric %>%
+mutate_if(is.character, str_replace_all, pattern = "A/A", replacement = "homozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "G/G", replacement = "homozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "C/C", replacement = "homozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "T/T", replacement = "homozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "A/G", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "A/C", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "A/T", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "G/A", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "G/C", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "G/T", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "C/A", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "C/G", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "C/T", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "T/A", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "T/C", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "T/G", replacement = "heterozygous")
+``` 
+
+``` {r}
+Zygosity_Teosinte_Chromosomes_Numeric <- Teosinte_Chromosomes_Numeric %>%
+mutate_if(is.character, str_replace_all, pattern = "A/A", replacement = "homozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "G/G", replacement = "homozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "C/C", replacement = "homozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "T/T", replacement = "homozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "A/G", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "A/C", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "A/T", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "G/A", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "G/C", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "G/T", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "C/A", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "C/G", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "C/T", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "T/A", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "T/C", replacement = "heterozygous")%>%
+mutate_if(is.character, str_replace_all, pattern = "T/G", replacement = "heterozygous")
+``` 
+
+``` {r}
+ggplot(Zygosity_Maize_Chromosomes_Numeric, aes(homozygous))
+```                                                                       
+                                                                       
+###Now that the Chromosome and Position values are numeric, plot using `ggplot()` 
+This shows the distribution of SNPs on each chromosome
+
+``` {r}
+ggplot(data = Maize_Chromosomes_Numeric) + geom_point(mapping=aes(x=Chromosome, y=Position))
+ggplot(data = Teosinte_Chromosomes_Numeric) + geom_point(mapping=aes(x=Chromosome, y=Position))
+
 ```
