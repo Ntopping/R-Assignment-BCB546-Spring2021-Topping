@@ -10,3 +10,4 @@ This Git repository has the following files:
 6. Maize_Descending_Chromosome_x There are 10 files for each chromosome under this label
 7. Teosinte_Ascending_Chromosome_x There are 10 files for each chromosome under this label
 8. Teosinte_Descending_Chromosome_x There are 10 files for each chromosome under this label
+9. .gitignore is a file that GitHub intentionally untracks
