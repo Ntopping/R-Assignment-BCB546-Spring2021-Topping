@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Assignment
+## R Assignment 
 
 To start, create a repository on GitHub.
 My repository is named R-Assignment-BCB546-Spring2021-Topping.
@@ -19,7 +19,7 @@ To load the working repository into R Studio:
 2. Open R Studio and click File, New Project, Version Control, Git
 3. Paste the repository URL, fill in the directory name and click Create Project
 
-Then, install and load any R packages needed for this assignment. You will need `tidyverse`, `ggplot2`, and `stringr`. Use `install.packages("package")` and load it into your library
+Then, install and load any R packages needed for this assignment. You will need `tidyverse`, `ggplot2`, and `stringr`. Use `install.packages("package")` and load it into your library if not installed
 
 ``` {r}
 library(tidyverse)
@@ -29,17 +29,21 @@ library(dplyr)
 library(stringr)
 ```
 
+### Data Extraction and Modification
+
 Next, open both data files, `fang_et_al_genotypes` and `snp_position.txt`.
-Both of these files were pulled from my computer where I already had them saved
+Both of these files can be found in the BCB-546-Spring2021 github repository, with the links below in the code. Transform the files into a data frame with the code below:
+
 ``` {r}
 fang_et_al_genotypes <- read.table("https://raw.githubusercontent.com/EEOB-BioData/BCB546-Spring2021/master/assignments/UNIX_Assignment/fang_et_al_genotypes.txt", header = TRUE,)
 snp_position <- read.table("https://raw.githubusercontent.com/EEOB-BioData/BCB546-Spring2021/master/assignments/UNIX_Assignment/snp_position.txt", header = TRUE, sep = "\t")
 ```
+
 To quickly look at the data files, double click on them in the Environment. This will show the data in a .txt file that you can see.
 
-Note: You can also use the function `view(fang_et_al_genotypes)` will also show the data, but it isn't working in my markdown file for some reason...
+Note: You can also use the function `view(fang_et_al_genotypes)` to show the data, but it isn't working in my markdown file for some reason...
 
-##### Below are a few codes you can use to inspect the data
+### Below are a few codes you can use to inspect the data
 
 `object.size()` shows the file size of the data frame
 
@@ -57,13 +61,13 @@ Note: You can also use the function `view(fang_et_al_genotypes)` will also show 
 
 `names()` shows the names attributes for the data frame, which are also the column names
 
-the function `colnames()` also will show the column names
+The function `colnames()` also will show the column names
 
 `sapply(dataframe, class)` shows the class of each column of data
 
-## fang_et_al_genotypes
+### fang_et_al_genotypes
 
-``` {r}
+``` {r eval=FALSE}
 object.size(fang_et_al_genotypes)
 ```
 
@@ -81,7 +85,7 @@ dim(fang_et_al_genotypes)
 
 Note: The output for functions `head()` `tail()` `str()` `names()` and `sapply(dataframe, class)` are not included in this markdown file for this data table as these outputs are very long and clutter the console
 
-## snp_position
+### snp_position
 
 ``` {r}
 object.size(snp_position)
@@ -113,7 +117,7 @@ sapply(snp_position, class)
 
 For this data table, only `head()` and `tails()` were left out of the snp_position analyses
 
-##Data Processing
+## Data Processing
 
 Create two new data frames sorted by the ID's of both species from fang_et_al_genotypes with the following code:
 
@@ -151,6 +155,11 @@ Maize_Chromosomes <- merge(SNP_Chrom_Pos,Maize_IDs_Transposed, by = "SNP_ID")
 Teosinte_Chromosomes <- merge(SNP_Chrom_Pos,Teosinte_IDs_Transposed, by = "SNP_ID")
 ```
 
+``` {r}
+Maize_Chromosomes[Maize_Chromosomes=="NA"] <- "?/?"
+Teosinte_Chromosomes[Teosinte_Chromosomes=="NA"] <- "?/?"
+```
+
 Sort both new files by position with the `order()` function
 
 ``` {r}
@@ -160,7 +169,7 @@ Maize_Chromosomes_Descending <- Maize_Chromosomes[order(suppressWarnings(as.nume
 Teosinte_Chromosomes_Descending <- Teosinte_Chromosomes[order(suppressWarnings(as.numeric(Teosinte_Chromosomes$Position, decreasing = T))), ]
 ```
 
-###Create a function to create 10 files in one command chunk###
+### Create a function to make 10 files in one command chunk (10 for Maize and Teosinte, ascending and descending order)
 
 ``` {r}
 Filter_By_Chromosome <- function(x, df){
@@ -188,71 +197,66 @@ Teosinte_Descending_By_Chromosome <-
 lapply(sort(unique(Teosinte_Chromosomes_Descending$Chromosome)), Filter_By_Chromosome, Teosinte_Chromosomes_Descending)
 invisible(lapply(Teosinte_Descending_By_Chromosome,function(x) write.csv(x, file = paste0("Teosinte_Descending_Chromosome_", x$Chromosome[1]))))
 ```
-#Plots#
+
+# Plots
 
 Transform the data so that both position and chromosome are numeric
-``` {r}
+
+``` {r warning=FALSE}
 Maize_Chromosomes_Numeric <- transform(Maize_Chromosomes, Chromosome =as.numeric(Chromosome), Position=as.numeric(Position))
 Teosinte_Chromosomes_Numeric <- transform(Teosinte_Chromosomes, Chromosome =as.numeric(Chromosome), Position=as.numeric(Position))
 ```
-###Plot the number of SNP's on each chromosome from the `snp_position` dataset###
+
+### Plot the number of SNP's on each chromosome from the `snp_position` dataset
+
 This gives the total number of SNPs per chromosome for both Maize and Teosinte
-```{r}
+
+```{r warning=FALSE}
 snp_position %>% 
   select(SNP_ID, Chromosome, Position) %>%
   drop_na() %>% 
   ggplot()+
-  geom_bar(aes(x=Chromosome))
+  geom_bar(aes(x=Chromosome), color="red", fill="red")+ ggtitle("Number of SNPs per Chromosome (Maize and Teosinte)") + labs(x = "Chromosome", y = "Number of SNPs")
 ```
 ``` {r}
-Zygosity_Maize_Chromosomes_Numeric <- Maize_Chromosomes_Numeric %>%
-mutate_if(is.character, str_replace_all, pattern = "A/A", replacement = "homozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "G/G", replacement = "homozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "C/C", replacement = "homozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "T/T", replacement = "homozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "A/G", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "A/C", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "A/T", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "G/A", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "G/C", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "G/T", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "C/A", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "C/G", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "C/T", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "T/A", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "T/C", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "T/G", replacement = "heterozygous")
-``` 
-
-``` {r}
-Zygosity_Teosinte_Chromosomes_Numeric <- Teosinte_Chromosomes_Numeric %>%
-mutate_if(is.character, str_replace_all, pattern = "A/A", replacement = "homozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "G/G", replacement = "homozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "C/C", replacement = "homozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "T/T", replacement = "homozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "A/G", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "A/C", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "A/T", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "G/A", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "G/C", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "G/T", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "C/A", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "C/G", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "C/T", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "T/A", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "T/C", replacement = "heterozygous")%>%
-mutate_if(is.character, str_replace_all, pattern = "T/G", replacement = "heterozygous")
-``` 
-
-``` {r}
-ggplot(Zygosity_Maize_Chromosomes_Numeric, aes(homozygous))
-```                                                                       
-                                                                       
-###Now that the Chromosome and Position values are numeric, plot using `ggplot()` 
-This shows the distribution of SNPs on each chromosome
-
-``` {r}
-ggplot(data = Maize_Chromosomes_Numeric) + geom_point(mapping=aes(x=Chromosome, y=Position))
-ggplot(data = Teosinte_Chromosomes_Numeric) + geom_point(mapping=aes(x=Chromosome, y=Position))
-
+fang_pivot <- fang_et_al_genotypes %>% pivot_longer(!c(Sample_ID, JG_OTU, Group), names_to="SNP_ID", values_to= "NT")
+merge_fang_pivot <- merge(fang_pivot, snp_position, by="SNP_ID")
 ```
+
+``` {r}
+merge_fang_pivot_numeric <- merge_fang_pivot[!is.na(as.numeric(merge_fang_pivot$Chromosome)),]
+```
+### Plot the distribution of SNPs along each chromosome by group based on Position values
+``` {r warning=FALSE}
+ggplot(data = merge_fang_pivot_numeric) + geom_bar(mapping = aes(as.numeric(Chromosome), fill=Group)) + scale_x_discrete(limit=c(1:10)) + labs(x = "Chromosome", y="SNPs Position by Group") + ggtitle("Distribution of SNPs along Chromosomes distributed by group") 
+```
+
+Add a new column to the `merge_fang_pivot` data frame called Zygosity
+
+``` {r}
+merge_fang_pivot$Zygosity <- "Heterozygous"
+```
+
+Replace all `"?/?"` with `Missing Data` in the Zygosity column
+
+``` {r}
+merge_fang_pivot$Zygosity[merge_fang_pivot$NT == "?/?"] <- "Missing Data"
+```
+
+For every "A/A", "C/C", "G/G", "T/T" site replace the value in the Zygosity column with `Homozygous`
+
+``` {r}
+merge_fang_pivot$Zygosity[merge_fang_pivot$NT %in% c("A/A", "C/C", "G/G", "T/T")] <- "Homozygous"
+```
+
+Plot the data of the proportion of heterozygous and homozygous sites, and missing data sites by Sample ID
+
+``` {r warning=FALSE}
+ggplot(data = merge_fang_pivot) + geom_bar(mapping=aes(x = Sample_ID, fill = Zygosity), position = "fill") + labs(x = "Sample_ID", y="Proportion") + ggtitle("Proportion of Heterozygous and Homozygous sites (with missing data)")
+```
+Plot the data of the proportion of heterozygous and homozygous sites, and missing data sites by group
+
+``` {r warning=FALSE}
+ggplot(data = merge_fang_pivot) + geom_bar(mapping = aes(x = Group, fill = Zygosity), position = "fill") + labs(x = "Group", y="Proportion") + ggtitle("Proportion of Heterozygous and Homozygous sites (with missing data) by group")
+```                                                  
+   
