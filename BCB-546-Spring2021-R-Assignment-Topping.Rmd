@@ -207,56 +207,66 @@ Maize_Chromosomes_Numeric <- transform(Maize_Chromosomes, Chromosome =as.numeric
 Teosinte_Chromosomes_Numeric <- transform(Teosinte_Chromosomes, Chromosome =as.numeric(Chromosome), Position=as.numeric(Position))
 ```
 
-### Plot the number of SNP's on each chromosome from the `snp_position` dataset
+### Plot the number of SNP's on each chromosome from the `fang_et_al_genotypes` dataset
 
-This gives the total number of SNPs per chromosome for both Maize and Teosinte
+Tidy up the data using the `pivot_longer()` function. Then merge the pivoted data with the SNP position data and make the data table numeric by chromosome.
 
-```{r warning=FALSE}
-snp_position %>% 
-  select(SNP_ID, Chromosome, Position) %>%
-  drop_na() %>% 
-  ggplot()+
-  geom_bar(aes(x=Chromosome), color="red", fill="red")+ ggtitle("Number of SNPs per Chromosome (Maize and Teosinte)") + labs(x = "Chromosome", y = "Number of SNPs")
-```
 ``` {r}
 fang_pivot <- fang_et_al_genotypes %>% pivot_longer(!c(Sample_ID, JG_OTU, Group), names_to="SNP_ID", values_to= "NT")
 merge_fang_pivot <- merge(fang_pivot, snp_position, by="SNP_ID")
-```
-
-``` {r}
 merge_fang_pivot_numeric <- merge_fang_pivot[!is.na(as.numeric(merge_fang_pivot$Chromosome)),]
 ```
-### Plot the distribution of SNPs along each chromosome by group based on Position values
-``` {r warning=FALSE}
-ggplot(data = merge_fang_pivot_numeric) + geom_bar(mapping = aes(as.numeric(Chromosome), fill=Group)) + scale_x_discrete(limit=c(1:10)) + labs(x = "Chromosome", y="SNPs Position by Group") + ggtitle("Distribution of SNPs along Chromosomes distributed by group") 
+
+This code below gives the total number of SNPs per chromosome for both Maize and Teosinte
+
+```{r}
+merge_fang_pivot_numeric %>% 
+  select(SNP_ID, Chromosome, Position) %>%
+  drop_na() %>% 
+  ggplot()+
+  geom_bar(mapping = aes(as.numeric(Chromosome)), color="red", fill="red")+ ggtitle("Number of SNPs per Chromosome (Maize and Teosinte)") + labs(x = "Chromosome", y = "Number of SNPs")
 ```
 
-Add a new column to the `merge_fang_pivot` data frame called Zygosity
+### Plot the distribution of SNPs along each chromosome 
+
+``` {r warning=FALSE}
+ggplot(data = merge_fang_pivot_numeric) + geom_bar(mapping = aes(as.numeric(Chromosome), fill=Group)) + scale_x_discrete(limit=c(1:10)) + labs(x = "Chromosome", y="SNumber of SNPs by group") + ggtitle("Distribution of SNPs along Chromosomes distributed by group") 
+```
+
+Add a new column to the `merge_fang_pivot_numeric` data frame called Zygosity
 
 ``` {r}
-merge_fang_pivot$Zygosity <- "Heterozygous"
+merge_fang_pivot_numeric$Zygosity <- "Heterozygous"
 ```
 
 Replace all `"?/?"` with `Missing Data` in the Zygosity column
 
 ``` {r}
-merge_fang_pivot$Zygosity[merge_fang_pivot$NT == "?/?"] <- "Missing Data"
+merge_fang_pivot_numeric$Zygosity[merge_fang_pivot_numeric$NT == "?/?"] <- "Missing Data"
 ```
 
 For every "A/A", "C/C", "G/G", "T/T" site replace the value in the Zygosity column with `Homozygous`
 
 ``` {r}
-merge_fang_pivot$Zygosity[merge_fang_pivot$NT %in% c("A/A", "C/C", "G/G", "T/T")] <- "Homozygous"
+merge_fang_pivot_numeric$Zygosity[merge_fang_pivot_numeric$NT %in% c("A/A", "C/C", "G/G", "T/T")] <- "Homozygous"
 ```
 
 Plot the data of the proportion of heterozygous and homozygous sites, and missing data sites by Sample ID
 
 ``` {r warning=FALSE}
-ggplot(data = merge_fang_pivot) + geom_bar(mapping=aes(x = Sample_ID, fill = Zygosity), position = "fill") + labs(x = "Sample_ID", y="Proportion") + ggtitle("Proportion of Heterozygous and Homozygous sites (with missing data)")
+ggplot(data = merge_fang_pivot_numeric) + geom_bar(mapping=aes(x = Sample_ID, fill = Zygosity), position = "fill") + labs(x = "Sample_ID", y="Proportion") + ggtitle("Proportion of Heterozygous and Homozygous sites (with missing data)")
 ```
 Plot the data of the proportion of heterozygous and homozygous sites, and missing data sites by group
 
 ``` {r warning=FALSE}
-ggplot(data = merge_fang_pivot) + geom_bar(mapping = aes(x = Group, fill = Zygosity), position = "fill") + labs(x = "Group", y="Proportion") + ggtitle("Proportion of Heterozygous and Homozygous sites (with missing data) by group")
+ggplot(data = merge_fang_pivot_numeric) + geom_bar(mapping = aes(x = Group, fill = Zygosity), position = "fill") + labs(x = "Group", y="Proportion") + ggtitle("Proportion of Heterozygous and Homozygous sites (with missing data) by group")
 ```                                                  
+
+## My own data visualization
+   
+I decided to plot the total number of SNP's per Chromosome
+   
+```{r}
+   ggplot(data = merge_fang_pivot_numeric) + geom_bar(mapping=aes(x = Chromosome, fill=Zygosity), position="dodge") + labs(x = "Chromosome", y="Number of SNPs") + ggtitle("Amount of Heterozygous and Homozygous individuals including missing data")
+```
    
