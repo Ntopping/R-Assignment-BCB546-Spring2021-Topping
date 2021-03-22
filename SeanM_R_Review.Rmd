@@ -1,0 +1,10 @@
+---
+title: "SeanM_Review"
+author: "Sean McLaughlin"
+date: "3/22/2021"
+output: pdf_document
+---
+##Nicholas Topping R_Assignment review
+
+#The code seems very clean and ran well giving the expected chromosome files. Your code for plots also looks good although you may have forgetten to add the the code to add a Zygosity column on line 236-239 unless the code on line 239 does that already. 
+#On thing I would suggest is to put the outputfiles into a results folder and your coding into another to clean up your repository.
